@@ -5,7 +5,7 @@ import gc
 from copy import deepcopy
 import argparse as ap
 import matplotlib
-matplotlib.use('QT5Agg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import cotrendy.utils as cuts
 import cotrendy.lightcurves as clc
@@ -100,11 +100,6 @@ if __name__ == "__main__":
     # pickle the intermediate CBVs object incase it crashes later
     cuts.picklify(cbv_pickle_file_output, cbvs)
 
-    # cotrend the data using either the LS or MAP methods
-    if config['cotrend']['cbv_mode'] == 'MAP':
-        # cotrend the data using the MAP method
-        cbvs.cotrend_data_map(catalog, store_map=False)
-    else:
-        cbvs.cotrend_data_ls()
+    cbvs.cotrend_data_map_mp(catalog)
     # pickle the intermediate CBVs object incase it crashes later
     cuts.picklify(cbv_pickle_file_output, cbvs)
