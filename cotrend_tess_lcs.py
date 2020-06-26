@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use('QT5Agg')
 import matplotlib.pyplot as plt
 import cotrendy.utils as cuts
-import cotrendy.lightcurves as tlc
+import cotrendy.lightcurves as clc
 from cotrendy.catalog import Catalog
 from cotrendy.cbvs import CBVs
 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
         # step 1, load the photometry, this is done here and not prior to
         # the check for CBVs because the flux array is pickled with the CBVs
-        times, lightcurves = tlc.load_photometry(config)
+        times, lightcurves = clc.load_photometry(config)
 
         # create a CBVs object for our targets, we want the top n_CBVs
         cbvs = CBVs(config, times, lightcurves)
@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
     # start reloading things
     catalog = Catalog(config, apply_mask=False)
-    times, lightcurves = tlc.load_photometry(config, apply_mask=False)
+    times, lightcurves = clc.load_photometry(config, apply_mask=False)
 
     # recreate the cbvs class but now manually insert some stuff from
     # the previous run and rerun the required parts for the cotrending
