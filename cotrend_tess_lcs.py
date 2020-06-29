@@ -2,11 +2,15 @@
 Example layout of using Cotrendy
 """
 import gc
+import os
 from copy import deepcopy
 import argparse as ap
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import numpy as np
+from astropy.io import fits
+from astropy.table import Table, Column
 import cotrendy.utils as cuts
 import cotrendy.lightcurves as clc
 from cotrendy.catalog import Catalog
@@ -30,6 +34,7 @@ if __name__ == "__main__":
     # load the configuration
     config = cuts.load_config(args.config)
     camera_id = config['global']['camera_id']
+    root = config['global']['root']
 
     # grab the locations of the data
     root = config['global']['root']
@@ -103,3 +108,55 @@ if __name__ == "__main__":
     cbvs.cotrend_data_map_mp(catalog)
     # pickle the intermediate CBVs object incase it crashes later
     cuts.picklify(cbv_pickle_file_output, cbvs)
+
+    # now we have the final cotrending and cotrended arrays we can
+    # bake them back into the input fits files
+
+    # move into the working directory and start editing the files
+    os.chdir(root)
+
+    # load the cadence mask
+    cadence_mask_file = config['data']['cadence_mask_file']
+    m = fits.open(cadence_mask_file)
+    mask = m[1].data['MASK']
+
+    # get a list of the light curve files for editing
+    for i, tic_id in enumerate(catalog.ids[:10]):
+        # load the fits lc file
+        fits_file = f"TIC-{np.int64(tic_id)}.fits"
+        table = Table(fits.open(fits_file)[1].data)
+        print(fits_file, os.path.exists(fits_file))
+
+        output_lc = np.ones(len(mask)) * -99.0
+        output_cbv = np.ones(len(mask)) * -99.0
+
+        # norm_flux_array = (flux - median) / median
+        med = lightcurves[i].median_flux
+        flux = (cbvs.cotrended_flux_array[i] * med) + med
+        output_lc[mask] = flux
+        output_cbv[mask] = cbvs.cotrending_flux_array[i]
+
+        # make table columns
+        cor_column = 'COR_AP2.5'
+        cbv_column = 'CBV_AP2.5'
+
+        # if this column already exists in the file
+        # update it, otherwise add a new Column object
+        if cor_column in table.keys():
+            table[cor_column] = output_lc
+        else:
+            col_corrected = Column(name=cor_column,
+                                   data=output_lc,
+                                   dtype=np.float64)
+            table.add_column(col_corrected)
+
+        if cbv_column in table.keys():
+            table[cbv_column] = output_cbv
+        else:
+            col_cbv = Column(name=cbv_column,
+                             data=output_cbv,
+                             dtype=np.float64)
+            table.add_column(col_cbv)
+
+        # write out the final light curve
+        table.write(fits_file, format="fits", overwrite=True)
