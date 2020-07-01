@@ -121,7 +121,7 @@ if __name__ == "__main__":
     mask = m[1].data['MASK']
 
     # get a list of the light curve files for editing
-    for i, tic_id in enumerate(catalog.ids[:10]):
+    for i, tic_id in enumerate(catalog.ids):
         # load the fits lc file
         fits_file = f"TIC-{np.int64(tic_id)}.fits"
         table = Table(fits.open(fits_file)[1].data)
