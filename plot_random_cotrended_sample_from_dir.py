@@ -3,6 +3,7 @@ Take an input dir and plot a random sample of the light curves
 
 We assume that the data is in AP2.5, COR_AP2.5 and CBV_AP2.5 columns
 """
+import gc
 import sys
 import glob as g
 import numpy as np
@@ -57,6 +58,9 @@ while i < n_lcs:
         ax[2].set_xlabel('BJD - BJD0')
         fig.tight_layout()
         fig.savefig(plot_name)
+        fig.clf()
+        plt.close()
+        gc.collect()
 
         print(i)
 
