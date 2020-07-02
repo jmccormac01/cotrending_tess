@@ -38,10 +38,12 @@ while i < n_lcs:
         flux = data['AP2.5'][mask]
         cbvs = data['CBV_AP2.5'][mask]
         flux_corr = data['COR_AP2.5'][mask]
+        sky = h['SKY_MEDIAN'][mask] * np.pi * (2.5**2)
+        flux_sky_corr = flux - sky
 
         # now make a plot of the data, the correction and the corrected data
         fig, ax = plt.subplots(3, figsize=(10, 10), sharex=True)
-        ax[0].plot(bjd, flux, 'g.', label='raw_norm')
+        ax[0].plot(bjd, flux_sky_corr, 'g.', label='raw_norm')
         ax[0].legend()
         ax[0].set_ylabel('Flux')
         ax[1].plot(bjd, cbvs, 'k.', label='cbv_total')
