@@ -45,7 +45,7 @@ while i < n_lcs:
         flux_corr_norm = (flux_corr - med) / med
 
         # now make a plot of the data, the correction and the corrected data
-        fig, ax = plt.subplots(3, figsize=(10, 10), sharex=True, sharey=True)
+        fig, ax = plt.subplots(3, figsize=(10, 10), sharex=True)
         ax[0].plot(bjd, flux, 'g.', label='raw_norm')
         ax[0].legend()
         ax[0].set_ylabel('Flux norm')
