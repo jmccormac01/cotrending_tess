@@ -38,7 +38,7 @@ while i < n_lcs:
         flux = data['AP2.5'][mask]
         cbvs = data['CBV_AP2.5'][mask]
         flux_corr = data['COR_AP2.5'][mask]
-        sky = h['SKY_MEDIAN'][mask] * np.pi * (2.5**2)
+        sky = data['SKY_MEDIAN'][mask] * np.pi * (2.5**2)
         flux_sky_corr = flux - sky
 
         # now make a plot of the data, the correction and the corrected data
