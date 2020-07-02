@@ -39,22 +39,17 @@ while i < n_lcs:
         cbvs = data['CBV_AP2.5'][mask]
         flux_corr = data['COR_AP2.5'][mask]
 
-        # do some normalisation for plotting
-        med = np.median(flux)
-        flux_norm = (flux - med) / med
-        flux_corr_norm = (flux_corr - med) / med
-
         # now make a plot of the data, the correction and the corrected data
-        fig, ax = plt.subplots(3, figsize=(10, 10), sharex=True, sharey=True)
-        ax[0].plot(bjd, flux_norm, 'g.', label='raw_norm')
+        fig, ax = plt.subplots(3, figsize=(10, 10), sharex=True)
+        ax[0].plot(bjd, flux, 'g.', label='raw_norm')
         ax[0].legend()
-        ax[0].set_ylabel('Flux norm')
+        ax[0].set_ylabel('Flux')
         ax[1].plot(bjd, cbvs, 'k.', label='cbv_total')
         ax[1].legend()
         ax[1].set_ylabel('Flux norm')
-        ax[2].plot(bjd, flux_corr_norm, 'r.', label='cotrended')
+        ax[2].plot(bjd, flux_corr, 'r.', label='cotrended')
         ax[2].legend()
-        ax[2].set_ylabel('Flux norm')
+        ax[2].set_ylabel('Flux')
         ax[2].set_xlabel('BJD - BJD0')
         fig.tight_layout()
         fig.savefig(plot_name)
