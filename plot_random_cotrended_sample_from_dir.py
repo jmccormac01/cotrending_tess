@@ -16,7 +16,7 @@ lcs = sorted(g.glob('TIC*.fits'))
 n_lcs = len(lcs)
 
 # open the mask file
-mask_files = g.glob('*mas*')
+mask_files = g.glob('*mask.fits')
 if len(mask_files) > 1:
     print('Multiple masks, quiting...')
     sys.exit(1)
