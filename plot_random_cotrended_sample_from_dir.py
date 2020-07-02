@@ -4,7 +4,8 @@ Take an input dir and plot a random sample of the light curves
 We assume that the data is in AP2.5, COR_AP2.5 and CBV_AP2.5 columns
 """
 import sys
-import glob
+import glob as g
+import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -24,6 +25,7 @@ with fits.open(mask_files[0]) as ff:
     mask = ff[1].data['MASK']
 
 # plot a random sample of lcs
+i = 0
 while i < n_lcs:
     try:
         plot_name = "{}.png".format(lcs[i].split('.')[0])
