@@ -20,6 +20,7 @@ def arg_parse():
     """
     p = ap.ArgumentParser()
     p.add_argument('tic_id',
+                   type=int,
                    help='TIC ID of target')
     p.add_argument('cbv_file',
                    help='Path to CBV file')
@@ -32,6 +33,25 @@ if __name__ == "__main__":
 
     catalog = cuts.depicklify(args.catalog_file)
     cbvs = cuts.depicklify(args.cbv_file)
+    n_cbvs = cbvs.n_cbvs
 
+    loc = np.where(catalog[-1] == args.tic_id)[0]
 
+    fig, ax = plt.subplots(n_cbvs+3, figsize=(10, 10), sharex=True, sharey=True)
 
+    # row 0 is the raw fluxes
+    ax[0].plot(cbvs.norm_flux_array[loc], 'g.')
+    ax[0].set_title(f"Ver: {cbvs.variability[loc]}")
+
+    # cbvs
+    for i, cbv_id in enumerate(sorted(cbvs.cbvs.keys())):
+        ax[i+1].plot(cbvs.cbvs[cbv_id]*cbvs.fit_coeffs[cbv_id][loc], 'r.')
+
+    # then the combined cbv
+    ax[n_cbvs+2].plot(cbvs.cotrending_flux_array[loc], 'b.')
+
+    # then the detrended lc
+    ax[n_cbvs+3].plot(cbvs.cotrended_flux_array[loc], 'k.')
+
+    fig.tight_layout()
+    fig.savefig(f'TIC-{args.tic_id}.png')
