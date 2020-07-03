@@ -29,7 +29,7 @@ def arg_parse():
     return p.parse_args()
 
 args = arg_parse()
-root = "/tess/photometry/tessFFIextract/lightcurves/"
+root = "/tess/photometry/tessFFIextract/lightcurves"
 config_filename = f"{root}/config_{args.sector_id}_{args.camera_id}_{args.chip_id}.toml"
 config_template = f"""# This is a TOML config file for TESS Sector {args.sector_id}
 [owner]
