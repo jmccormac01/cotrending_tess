@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     catalog = cuts.depicklify(args.catalog_file)
     cbvs = cuts.depicklify(args.cbv_file)
-    n_cbvs = cbvs.n_cbvs
+    n_cbvs = len(cbvs.vect_store)
 
     loc = np.where(catalog[-1] == args.tic_id)[0]
 
