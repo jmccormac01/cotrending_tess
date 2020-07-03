@@ -35,7 +35,7 @@ if __name__ == "__main__":
     cbvs = cuts.depicklify(args.cbv_file)
     n_cbvs = len(cbvs.vect_store)
 
-    loc = np.where(catalog[-1] == args.tic_id)[0]
+    loc = np.where(catalog[-1] == args.tic_id)[0][0]
 
     fig, ax = plt.subplots(n_cbvs+3, figsize=(10, 10), sharex=True, sharey=True)
 
