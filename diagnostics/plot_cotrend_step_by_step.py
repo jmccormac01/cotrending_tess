@@ -48,10 +48,10 @@ if __name__ == "__main__":
         ax[i+1].plot(cbvs.cbvs[cbv_id]*cbvs.fit_coeffs[cbv_id][loc], 'r.')
 
     # then the combined cbv
-    ax[n_cbvs+2].plot(cbvs.cotrending_flux_array[loc], 'b.')
+    ax[n_cbvs+1].plot(cbvs.cotrending_flux_array[loc], 'b.')
 
     # then the detrended lc
-    ax[n_cbvs+3].plot(cbvs.cotrended_flux_array[loc], 'k.')
+    ax[n_cbvs+2].plot(cbvs.cotrended_flux_array[loc], 'k.')
 
     fig.tight_layout()
     fig.savefig(f'TIC-{args.tic_id}.png')
