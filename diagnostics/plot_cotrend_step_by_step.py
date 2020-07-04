@@ -40,18 +40,30 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(n_cbvs+3, figsize=(10, 10), sharex=True, sharey=True)
 
     # row 0 is the raw fluxes
-    ax[0].plot(cbvs.norm_flux_array[loc], 'g.')
+    ax[0].plot(cbvs.norm_flux_array[loc], 'g.', label='raw data')
     ax[0].set_title(f"Ver: {cbvs.variability[loc]}")
+    ax[0].legend()
 
     # cbvs
+    ls_cbvs = []
     for i, cbv_id in enumerate(sorted(cbvs.cbvs.keys())):
-        ax[i+1].plot(cbvs.cbvs[cbv_id]*cbvs.fit_coeffs[cbv_id][loc], 'r.')
+        this_cbv_ls = cbvs.cbvs[cbv_id]*cbvs.fit_coeffs[cbv_id][loc]
+        ls_cbvs.append(this_cbv_ls)
+        ax[i+1].plot(this_cbv_ls, 'r.', label=f'CBV {cbv_id}')
+        ax[i+1].legend()
 
-    # then the combined cbv
-    ax[n_cbvs+1].plot(cbvs.cotrending_flux_array[loc], 'b.')
+    # combine the ls cbvs
+    ls_cbvs = np.sum(np.array(ls_cbvs), axis=0)
+
+    # plot the commbined LS CBVs and
+    # then the combined cbv that was applied
+    ax[n_cbvs+1].plot(cbvs.cotrending_flux_array[loc], 'b.', label='MAP')
+    ax[n_cbvs+1].plot(ls_cbvs, '.', color='orange', label='LS')
+    ax[n_cbvs+1].legend()
 
     # then the detrended lc
-    ax[n_cbvs+2].plot(cbvs.cotrended_flux_array[loc], 'k.')
+    ax[n_cbvs+2].plot(cbvs.cotrended_flux_array[loc], 'k.', label='Cotrended MAP')
+    ax[n_cbvs+2].legend()
 
     fig.tight_layout()
     fig.savefig(f'TIC-{args.tic_id}.png')
