@@ -54,6 +54,7 @@ if __name__ == "__main__":
 
     # combine the ls cbvs
     ls_cbvs = np.sum(np.array(ls_cbvs), axis=0)
+    corrected_ls = cbvs.norm_flux_array[loc] - ls_cbvs
 
     # plot the commbined LS CBVs and
     # then the combined cbv that was applied
@@ -62,7 +63,8 @@ if __name__ == "__main__":
     ax[n_cbvs+1].legend()
 
     # then the detrended lc
-    ax[n_cbvs+2].plot(cbvs.cotrended_flux_array[loc], 'k.', label='Cotrended MAP')
+    ax[n_cbvs+2].plot(cbvs.cotrended_flux_array[loc], 'b.', label='Cotrended MAP')
+    ax[n_cbvs+2].plot(corrected_ls, '.', color='orange' label='Cotrended LS')
     ax[n_cbvs+2].legend()
 
     fig.tight_layout()
