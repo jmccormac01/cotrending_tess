@@ -1,6 +1,7 @@
 """
 Take a directory of TESS lcs, a catalog
-for those objects and a mask file and
+for those objects and a with fits.open(mask_files[0]) as ff:
+mask = ff[1].datamask file and
 prepare input files for cotrendy
 """
 import os

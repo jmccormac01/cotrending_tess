@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     # row 0 is the raw fluxes
     ax[0].plot(cbvs.norm_flux_array[loc], 'g.', label='raw data')
-    ax[0].set_title(f"Ver: {cbvs.variability[loc]}")
+    ax[0].set_title(f"Var_norm: {cbvs.variability[loc]:.4f}")
     ax[0].legend()
 
     # cbvs
