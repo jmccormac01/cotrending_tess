@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     # then the detrended lc
     ax[n_cbvs+2].plot(cbvs.cotrended_flux_array[loc], 'b.', label='Cotrended MAP')
-    ax[n_cbvs+2].plot(corrected_ls, '.', color='orange' label='Cotrended LS')
+    ax[n_cbvs+2].plot(corrected_ls, '.', color='orange', label='Cotrended LS')
     ax[n_cbvs+2].legend()
 
     fig.tight_layout()
