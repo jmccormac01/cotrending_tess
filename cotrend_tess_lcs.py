@@ -73,6 +73,9 @@ if __name__ == "__main__":
     print('Copying results...')
     vectors = deepcopy(cbvs.vect_store)
     cbvs_copy = deepcopy(cbvs.cbvs)
+    U_copy = deepcopy(cbvs.U)
+    Sigma_copy = deepcopy(cbvs.s)
+    VT_copy = deepcopy(cbvs.VT)
 
     # free up some resources
     print('Freeing up some resources...')
@@ -90,6 +93,9 @@ if __name__ == "__main__":
     # the previous run and rerun the required parts for the cotrending
     cbvs = CBVs(config, times, lightcurves)
     cbvs.calculate_normalised_variability()
+    cbvs.U = U_copy
+    cbvs.s = Sigma_copy
+    cbvs.VT = VT_copy
 
     # set the previously calculate parameters
     cbvs.cbvs = cbvs_copy
