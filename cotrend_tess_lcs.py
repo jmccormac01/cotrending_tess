@@ -25,6 +25,9 @@ def arg_parse():
     p = ap.ArgumentParser()
     p.add_argument('config',
                    help='path to config file')
+    p.add_argument('--cbvs_only',
+                   help='Enable to calculate CBVs only',
+                   action='store_true')
     return p.parse_args()
 
 if __name__ == "__main__":
@@ -66,103 +69,104 @@ if __name__ == "__main__":
         # pickle the intermediate CBVs object incase it crashes later
         cuts.picklify(cbv_pickle_file_output, cbvs)
 
+    # if we want to do the full detrend, continue
+    if not args.cbvs_only:
+        # At this point we have the CBVs, now we need to go back and
+        # cotrend everything using them. We have to reload all the phot
+        # the catalog and redo the variability calc etc
+        print('Copying results...')
+        vectors = deepcopy(cbvs.vect_store)
+        cbvs_copy = deepcopy(cbvs.cbvs)
+        U_copy = deepcopy(cbvs.U)
+        Sigma_copy = deepcopy(cbvs.s)
+        VT_copy = deepcopy(cbvs.VT)
 
-    # At this point we have the CBVs, now we need to go back and
-    # cotrend everything using them. We have to reload all the phot
-    # the catalog and redo the variability calc etc
-    print('Copying results...')
-    vectors = deepcopy(cbvs.vect_store)
-    cbvs_copy = deepcopy(cbvs.cbvs)
-    U_copy = deepcopy(cbvs.U)
-    Sigma_copy = deepcopy(cbvs.s)
-    VT_copy = deepcopy(cbvs.VT)
+        # free up some resources
+        print('Freeing up some resources...')
+        del cbvs
+        del catalog
+        del times
+        del lightcurves
+        gc.collect()
 
-    # free up some resources
-    print('Freeing up some resources...')
-    del cbvs
-    del catalog
-    del times
-    del lightcurves
-    gc.collect()
+        # start reloading things
+        catalog = Catalog(config, apply_mask=False)
+        times, lightcurves = clc.load_photometry(config, apply_mask=False)
 
-    # start reloading things
-    catalog = Catalog(config, apply_mask=False)
-    times, lightcurves = clc.load_photometry(config, apply_mask=False)
+        # recreate the cbvs class but now manually insert some stuff from
+        # the previous run and rerun the required parts for the cotrending
+        cbvs = CBVs(config, times, lightcurves)
+        cbvs.calculate_normalised_variability()
+        cbvs.U = U_copy
+        cbvs.s = Sigma_copy
+        cbvs.VT = VT_copy
 
-    # recreate the cbvs class but now manually insert some stuff from
-    # the previous run and rerun the required parts for the cotrending
-    cbvs = CBVs(config, times, lightcurves)
-    cbvs.calculate_normalised_variability()
-    cbvs.U = U_copy
-    cbvs.s = Sigma_copy
-    cbvs.VT = VT_copy
+        # set the previously calculate parameters
+        cbvs.cbvs = cbvs_copy
+        cbvs.vect_store = vectors
 
-    # set the previously calculate parameters
-    cbvs.cbvs = cbvs_copy
-    cbvs.vect_store = vectors
-
-    # work out the fit coefficients, needed for the Prior PDF
-    # calculate them either simultaneously for all CBVs or sequentially
-    # from the first to last
-    if cbv_fit_method == "sequential":
-        cbvs.calculate_robust_fit_coeffs_sequen()
-    else:
-        cbvs.calculate_robust_fit_coeffs_simult()
-    # pickle the intermediate CBVs object incase it crashes later
-    cuts.picklify(cbv_pickle_file_output, cbvs)
-
-    cbvs.cotrend_data_map_mp(catalog)
-    # pickle the intermediate CBVs object incase it crashes later
-    cuts.picklify(cbv_pickle_file_output, cbvs)
-
-    # now we have the final cotrending and cotrended arrays we can
-    # bake them back into the input fits files
-
-    # move into the working directory and start editing the files
-    os.chdir(root)
-
-    # load the cadence mask
-    cadence_mask_file = config['data']['cadence_mask_file']
-    m = fits.open(cadence_mask_file)
-    mask = m[1].data['MASK']
-
-    # get a list of the light curve files for editing
-    for i, tic_id in enumerate(catalog.ids):
-        # load the fits lc file
-        fits_file = f"TIC-{np.int64(tic_id)}.fits"
-        table = Table(fits.open(fits_file)[1].data)
-        print(fits_file, os.path.exists(fits_file))
-
-        output_lc = np.ones(len(mask)) * -99.0
-        output_cbv = np.ones(len(mask)) * -99.0
-
-        # norm_flux_array = (flux - median) / median
-        med = lightcurves[i].median_flux
-        flux = (cbvs.cotrended_flux_array[i] * med) + med
-        output_lc[mask] = flux
-        output_cbv[mask] = cbvs.cotrending_flux_array[i]
-
-        # make table columns
-        cor_column = 'COR_AP2.5'
-        cbv_column = 'CBV_AP2.5'
-
-        # if this column already exists in the file
-        # update it, otherwise add a new Column object
-        if cor_column in table.keys():
-            table[cor_column] = output_lc
+        # work out the fit coefficients, needed for the Prior PDF
+        # calculate them either simultaneously for all CBVs or sequentially
+        # from the first to last
+        if cbv_fit_method == "sequential":
+            cbvs.calculate_robust_fit_coeffs_sequen()
         else:
-            col_corrected = Column(name=cor_column,
-                                   data=output_lc,
-                                   dtype=np.float64)
-            table.add_column(col_corrected)
+            cbvs.calculate_robust_fit_coeffs_simult()
+        # pickle the intermediate CBVs object incase it crashes later
+        cuts.picklify(cbv_pickle_file_output, cbvs)
 
-        if cbv_column in table.keys():
-            table[cbv_column] = output_cbv
-        else:
-            col_cbv = Column(name=cbv_column,
-                             data=output_cbv,
-                             dtype=np.float64)
-            table.add_column(col_cbv)
+        cbvs.cotrend_data_map_mp(catalog)
+        # pickle the intermediate CBVs object incase it crashes later
+        cuts.picklify(cbv_pickle_file_output, cbvs)
 
-        # write out the final light curve
-        table.write(fits_file, format="fits", overwrite=True)
+        # now we have the final cotrending and cotrended arrays we can
+        # bake them back into the input fits files
+
+        # move into the working directory and start editing the files
+        os.chdir(root)
+
+        # load the cadence mask
+        cadence_mask_file = config['data']['cadence_mask_file']
+        m = fits.open(cadence_mask_file)
+        mask = m[1].data['MASK']
+
+        # get a list of the light curve files for editing
+        for i, tic_id in enumerate(catalog.ids):
+            # load the fits lc file
+            fits_file = f"TIC-{np.int64(tic_id)}.fits"
+            table = Table(fits.open(fits_file)[1].data)
+            print(fits_file, os.path.exists(fits_file))
+
+            output_lc = np.ones(len(mask)) * -99.0
+            output_cbv = np.ones(len(mask)) * -99.0
+
+            # norm_flux_array = (flux - median) / median
+            med = lightcurves[i].median_flux
+            flux = (cbvs.cotrended_flux_array[i] * med) + med
+            output_lc[mask] = flux
+            output_cbv[mask] = cbvs.cotrending_flux_array[i]
+
+            # make table columns
+            cor_column = 'COR_AP2.5'
+            cbv_column = 'CBV_AP2.5'
+
+            # if this column already exists in the file
+            # update it, otherwise add a new Column object
+            if cor_column in table.keys():
+                table[cor_column] = output_lc
+            else:
+                col_corrected = Column(name=cor_column,
+                                       data=output_lc,
+                                       dtype=np.float64)
+                table.add_column(col_corrected)
+
+            if cbv_column in table.keys():
+                table[cbv_column] = output_cbv
+            else:
+                col_cbv = Column(name=cbv_column,
+                                 data=output_cbv,
+                                 dtype=np.float64)
+                table.add_column(col_cbv)
+
+            # write out the final light curve
+            table.write(fits_file, format="fits", overwrite=True)

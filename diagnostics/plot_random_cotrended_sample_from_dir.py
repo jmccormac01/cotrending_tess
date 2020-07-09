@@ -68,6 +68,3 @@ while i < n_lcs:
         print('Out of bounds')
 
     i += every
-
-
-
