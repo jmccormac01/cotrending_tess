@@ -6,7 +6,6 @@ prepare input files for cotrendy
 """
 import os
 import argparse as ap
-import glob as g
 import numpy as np
 from astropy.io import fits
 from cotrendy.utils import picklify, load_config
@@ -47,13 +46,10 @@ if __name__ == "__main__":
     dilutions = []
     cbv_objects_mask = []
 
-    # get a list of TIC lc files in current directory
-    tic_files = sorted(g.glob('TIC-*.fits'))
-
-    # loop over the files and pull out the ones we want to use for CBVs
-    ignore = []
-    for tic_file in tic_files:
-        tic_id = int(tic_file.split('.fits')[0].split('-')[1])
+    # loop over the catalog rows and pull out the ones we want to use for CBVs
+    for row in cat:
+        tic_id = row['TIC_ID']
+        tic_file = f"TIC-{tic_id}.fits"
 
         h = fits.open(tic_file)[1].data
         flux = h['AP2.5'][mask]
@@ -62,35 +58,19 @@ if __name__ == "__main__":
         neg = np.sum([flux_corr < 0])
 
         if neg == 0:
-            # get the catalog info for pickle file
-            row_in_cat = np.where(cat['TIC_ID'] == tic_id)[0]
-
-            ra = cat['RA'][row_in_cat][0]
-            dec = cat['DEC'][row_in_cat][0]
-            mag = cat['Tmag'][row_in_cat][0]
-
-            ras.append(ra)
-            decs.append(dec)
-            mags.append(mag)
+            ras.append(row['RA'])
+            decs.append(row['DEC'])
+            mags.append(row['Tmag'])
             ids.append(tic_id)
 
             fluxes_to_trendy.append(flux_corr)
             times0 = int(h['BJD'][mask][0])
             times = h['BJD'][mask] - times0
 
-            if 8.0 <= mag <= 12.0 and neg == 0:
+            if 8.0 <= row['Tmag'] <= 12.0 and neg == 0:
                 cbv_objects_mask.append(True)
             else:
                 cbv_objects_mask.append(False)
-        else:
-            # store these files for ignoring
-            ignore.append(tic_file)
-
-    # get rid of files with negative counts
-    if not os.path.exists('ignore'):
-        os.mkdir('ignore')
-    for ig in ignore:
-        os.system(f"mv {ig} ignore/")
 
     fluxes_to_trendy = np.array(fluxes_to_trendy)
     cbv_objects_mask = np.array(cbv_objects_mask)
