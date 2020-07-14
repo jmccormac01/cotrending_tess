@@ -52,7 +52,7 @@ flux_file = "tess_{args.sector_id}_{args.camera_id}_{args.chip_id}_fluxes.pkl"
 # a file containing errors on flxues (1 row per star)
 error_file = "tess_{args.sector_id}_{args.camera_id}_{args.chip_id}_errors.pkl"
 # mask file to exclude cadences from CBV fitting
-cadence_mask_file = "/tess/photometry/tessFFIextract/sources/{args.sector_id}_mask.fits"
+cadence_mask_file = "/tess/photometry/tessFFIextract/masks_new/{args.sector_id}_{args.camera_id}-{args.chip_id}_mask.fits"
 # name of the cbv pickle file
 cbv_file = "tess_{args.sector_id}_{args.camera_id}_{args.chip_id}_cbvs.pkl"
 # file with ids of objects considered for CVBs
