@@ -38,7 +38,7 @@ version = "0.0.1"
 
 [global]
 # working directory
-root = "{root}/{args.sector_id}"
+root = "{root}"
 # time slot identifier, quarter, night etc
 timeslot = "{args.sector_id}"
 # camera_id
