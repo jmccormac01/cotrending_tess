@@ -21,9 +21,11 @@ def arg_parse():
     """
     p = ap.ArgumentParser()
     p.add_argument('catalog',
-                   help='catalog filename')
+                   help='catalog pickled filename')
+    p.add_argument('cbvs',
+                   help='cbvs pickled filename')
     p.add_argument('mask',
-                   help='cadence mask filename')
+                   help='cadence mask fits filename')
     p.add_argument('pool_size',
                    type=int,
                    help='number of cores to run on')
