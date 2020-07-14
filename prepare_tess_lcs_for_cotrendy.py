@@ -59,7 +59,7 @@ if __name__ == "__main__":
             flux_corr = flux - sky
             neg = np.sum([flux_corr < 0])
         except FileNotFoundError:
-            print(f"Skipping {tic_file}, not found...")
+            #print(f"Skipping {tic_file}, not found...")
             skipped += 1
             continue
 
