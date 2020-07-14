@@ -47,15 +47,21 @@ if __name__ == "__main__":
     cbv_objects_mask = []
 
     # loop over the catalog rows and pull out the ones we want to use for CBVs
+    skipped = 0
     for row in cat:
         tic_id = row['TIC_ID']
         tic_file = f"TIC-{tic_id}.fits"
 
-        h = fits.open(tic_file)[1].data
-        flux = h['AP2.5'][mask]
-        sky = h['SKY_MEDIAN'][mask] * np.pi * (2.5**2)
-        flux_corr = flux - sky
-        neg = np.sum([flux_corr < 0])
+        try:
+            h = fits.open(tic_file)[1].data
+            flux = h['AP2.5'][mask]
+            sky = h['SKY_MEDIAN'][mask] * np.pi * (2.5**2)
+            flux_corr = flux - sky
+            neg = np.sum([flux_corr < 0])
+        except FileNotFoundError:
+            print(f"Skipping {tic_file}, not found...")
+            skipped += 1
+            continue
 
         if neg == 0:
             ras.append(row['RA'])
@@ -81,3 +87,5 @@ if __name__ == "__main__":
     picklify(config['data']['error_file'], np.sqrt(fluxes_to_trendy))
     picklify(config['data']['objects_mask_file'], cbv_objects_mask)
     picklify(config['catalog']['input_cat_file'], np.array([ras, decs, mags, ids]))
+
+    print(f"Skipped {skipped} objects from catalog, files not found.")
