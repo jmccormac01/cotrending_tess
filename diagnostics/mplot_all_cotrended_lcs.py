@@ -3,8 +3,6 @@ Use multiprocessing to plot all the cotrended diagnostic lcs
 for a set of TESS FFIs
 """
 import gc
-import sys
-import glob as g
 import numpy as np
 import argparse as ap
 import matplotlib
@@ -13,6 +11,7 @@ import matplotlib.pyplot as plt
 from multiprocessing import Pool
 from functools import partial
 from astropy.io import fits
+from cotrendy.utils import depicklify
 
 # pylint: disable=invalid-name
 
@@ -21,6 +20,10 @@ def arg_parse():
     Parse command line
     """
     p = ap.ArgumentParser()
+    p.add_argument('catalog',
+                   help='catalog filename')
+    p.add_argument('mask',
+                   help='cadence mask filename')
     p.add_argument('pool_size',
                    type=int,
                    help='number of cores to run on')
@@ -30,11 +33,23 @@ def worker_fn(star_id, constants):
     """
     Read the files and do the plotting
     """
-    lcs, mask = constants
+    catalog, variability, mask = constants
 
-    fits_file = lcs[star_id]
-    base_name = fits_file.split('.fits')[0]
-    plot_name = f"{base_name}.png"
+    # ra, dec, Tmag, ID
+    current_cat_row = catalog[:, star_id]
+    tic_id = int(current_cat_row[-1])
+    t_mag = round(current_cat_row[-2], 2)
+
+    # variability
+    var_n = round(variability[star_id], 4)
+    if var_n >= 3.9:
+        method = "PRIOR"
+    else:
+        method = "LS"
+
+    # names
+    fits_file = f"TIC-{tic_id}.fits"
+    plot_name = f"TIC-{tic_id}.png"
 
     try:
         with fits.open(fits_file) as ff:
@@ -53,6 +68,7 @@ def worker_fn(star_id, constants):
 
         # now make a plot of the data, the correction and the corrected data
         fig, ax = plt.subplots(nrows=5, ncols=1, figsize=(10, 10), sharex=True)
+        ax[0].set_title(f"TIC-{tic_id} T={t_mag} Var_n={var} [{method}]")
         ax[0].plot(bjd, flux, 'k.', label='AP2.5')
         ax[0].legend()
         ax[0].set_ylabel('Flux')
@@ -84,25 +100,28 @@ def worker_fn(star_id, constants):
 
 if __name__ == "__main__":
     args = arg_parse()
-    lightcurves = sorted(g.glob('TIC*.fits'))
-    n_lcs = len(lightcurves)
-    target_ids = np.arange(0, n_lcs)
 
-    # open the mask file
-    mask_files = g.glob('*mask.fits')
-    if len(mask_files) > 1:
-        print('Multiple masks, quiting...')
-        sys.exit(1)
+    # load this info for adding to plots
+    catalog = depicklify(args.catalog)
+    cbvs = depicklify(args.cbvs)
 
-    with fits.open(mask_files[0]) as ff:
-        cadence_mask = ff[1].data['MASK']
+    if catalog is not None and cbvs is not None:
 
-    # set up constants tuple
-    const = (lightcurves, cadence_mask)
+        # check the shapes match
+        assert len(catalog[0]) == len(cbvs.variability), "Mismatched catalog/variability arrays"
 
-    # make a partial function with the constants baked in
-    fn = partial(worker_fn, constants=const)
+        n_targets = len(catalog[0])
+        target_ids = np.arange(0, n_targets)
 
-    # run a pool of 6 workers and set them detrending
-    with Pool(args.pool_size) as pool:
-        pool.map(fn, target_ids)
+        with fits.open(args.mask) as ff:
+            cadence_mask = ff[1].data['MASK']
+
+        # set up constants tuple
+        const = (catalog, cbvs.variability, cadence_mask)
+
+        # make a partial function with the constants baked in
+        fn = partial(worker_fn, constants=const)
+
+        # run a pool of 6 workers and set them detrending
+        with Pool(args.pool_size) as pool:
+            pool.map(fn, target_ids)

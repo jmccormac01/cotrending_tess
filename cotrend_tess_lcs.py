@@ -69,6 +69,14 @@ if __name__ == "__main__":
         # pickle the intermediate CBVs object incase it crashes later
         cuts.picklify(cbv_pickle_file_output, cbvs)
 
+        # work out the fit coefficients, needed for the Prior PDF
+        cbvs.calculate_robust_fit_coeffs_simult()
+        # pickle the intermediate CBVs object incase it crashes later
+        cuts.picklify(cbv_pickle_file_output, cbvs)
+
+        # calculate fit coefficient correlations
+        cbvs.plot_fit_coeff_correlations(catalog)
+
     # if we want to do the full detrend, continue
     if not args.cbvs_only:
         # At this point we have the CBVs, now we need to go back and
@@ -106,12 +114,7 @@ if __name__ == "__main__":
         cbvs.vect_store = vectors
 
         # work out the fit coefficients, needed for the Prior PDF
-        # calculate them either simultaneously for all CBVs or sequentially
-        # from the first to last
-        if cbv_fit_method == "sequential":
-            cbvs.calculate_robust_fit_coeffs_sequen()
-        else:
-            cbvs.calculate_robust_fit_coeffs_simult()
+        cbvs.calculate_robust_fit_coeffs_simult()
         # pickle the intermediate CBVs object incase it crashes later
         cuts.picklify(cbv_pickle_file_output, cbvs)
 
