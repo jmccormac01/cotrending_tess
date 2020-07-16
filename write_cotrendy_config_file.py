@@ -29,8 +29,8 @@ def arg_parse():
     return p.parse_args()
 
 args = arg_parse()
-root = f"/tess/photometry/tessFFIextract/lightcurves/{args.sector_id}"
-config_filename = f"{root}/config_{args.sector_id}_{args.camera_id}_{args.chip_id}.toml"
+root = f"/tess/photometry/tessFFIextract/lightcurves/{args.sector_id}_{args.camera}-{args.chip}"
+config_filename = f"{root}/config_{args.sector_id}_{args.camera_id}-{args.chip_id}.toml"
 config_template = f"""# This is a TOML config file for TESS Sector {args.sector_id}
 [owner]
 name = "James McCormac"
@@ -42,21 +42,21 @@ root = "{root}"
 # time slot identifier, quarter, night etc
 timeslot = "{args.sector_id}"
 # camera_id
-camera_id = "{args.camera_id}_{args.chip_id}"
+camera_id = "{args.camera_id}-{args.chip_id}"
 
 [data]
 # a file containing times, this should be the same length as each star row below
-time_file = "tess_{args.sector_id}_{args.camera_id}_{args.chip_id}_times.pkl"
+time_file = "tess_{args.sector_id}_{args.camera_id}-{args.chip_id}_times.pkl"
 # a file containing fluxes (1 row per star)
-flux_file = "tess_{args.sector_id}_{args.camera_id}_{args.chip_id}_fluxes.pkl"
+flux_file = "tess_{args.sector_id}_{args.camera_id}-{args.chip_id}_fluxes.pkl"
 # a file containing errors on flxues (1 row per star)
-error_file = "tess_{args.sector_id}_{args.camera_id}_{args.chip_id}_errors.pkl"
+error_file = "tess_{args.sector_id}_{args.camera_id}-{args.chip_id}_errors.pkl"
 # mask file to exclude cadences from CBV fitting
-cadence_mask_file = "/tess/photometry/tessFFIextract/masks_new/{args.sector_id}_{args.camera_id}-{args.chip_id}_mask.fits"
+cadence_mask_file = "/tess/photometry/tessFFIextract/masks/{args.sector_id}_{args.camera_id}-{args.chip_id}_mask.fits"
 # name of the cbv pickle file
-cbv_file = "tess_{args.sector_id}_{args.camera_id}_{args.chip_id}_cbvs.pkl"
+cbv_file = "tess_{args.sector_id}_{args.camera_id}-{args.chip_id}_cbvs.pkl"
 # file with ids of objects considered for CVBs
-objects_mask_file = "tess_{args.sector_id}_{args.camera_id}_{args.chip_id}_objects_mask.pkl"
+objects_mask_file = "tess_{args.sector_id}_{args.camera_id}-{args.chip_id}_objects_mask.pkl"
 # reject outliers in the data, as per PLATO outlier rejection?
 reject_outliers = false
 
@@ -66,6 +66,8 @@ master_cat_file = "/tess/photometry/tessFFIextract/sources/{args.sector_id}_{arg
 # CBV input catalogs - these are the stars kept for making the CBVs
 # ra, dec, mag, id
 input_cat_file = "tess_{args.sector_id}_{args.camera_id}_{args.chip_id}_cat.pkl"
+# MAP weights for ra, dec and mag
+dim_weights = [1, 1, 2]
 
 [cotrend]
 # number of workers in multiprocessing pool

@@ -41,7 +41,7 @@ if __name__ == "__main__":
     cat = fits.open(cat_file)[1].data
 
     # store some stuff for later
-    fluxes_to_trendy, ras, decs, mags, ids = [], [], [], [], []
+    fluxes_to_cotrendy, ras, decs, mags, ids = [], [], [], [], []
     neg_fluxes = []
     dilutions = []
     cbv_objects_mask = []
@@ -69,7 +69,7 @@ if __name__ == "__main__":
             mags.append(row['Tmag'])
             ids.append(tic_id)
 
-            fluxes_to_trendy.append(flux_corr)
+            fluxes_to_cotrendy.append(flux_corr)
             times0 = int(h['BJD'][mask][0])
             times = h['BJD'][mask] - times0
 
@@ -78,14 +78,15 @@ if __name__ == "__main__":
             else:
                 cbv_objects_mask.append(False)
 
-    fluxes_to_trendy = np.array(fluxes_to_trendy)
+    fluxes_to_cotrendy = np.array(fluxes_to_cotrendy)
     cbv_objects_mask = np.array(cbv_objects_mask)
 
     # pickle the outputs
     picklify(config['data']['time_file'], times)
-    picklify(config['data']['flux_file'], fluxes_to_trendy)
-    picklify(config['data']['error_file'], np.sqrt(fluxes_to_trendy))
+    picklify(config['data']['flux_file'], fluxes_to_cotrendy)
+    picklify(config['data']['error_file'], np.sqrt(fluxes_to_cotrendy))
     picklify(config['data']['objects_mask_file'], cbv_objects_mask)
     picklify(config['catalog']['input_cat_file'], np.array([ras, decs, mags, ids]))
 
+    print(f"Grabbed light curves for {len(fluxes_to_cotrendy)} objects.")
     print(f"Skipped {skipped} objects from catalog, files not found.")
