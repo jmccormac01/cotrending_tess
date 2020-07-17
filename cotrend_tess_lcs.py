@@ -112,6 +112,7 @@ if __name__ == "__main__":
         # set the previously calculate parameters
         cbvs.cbvs = cbvs_copy
         cbvs.vect_store = vectors
+        cbvs.n_cbvs = len(vectors)
 
         # work out the fit coefficients, needed for the Prior PDF
         cbvs.calculate_robust_fit_coeffs_simult()
