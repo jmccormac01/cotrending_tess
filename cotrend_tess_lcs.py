@@ -91,11 +91,14 @@ if __name__ == "__main__":
 
         # free up some resources
         print('Freeing up some resources...')
-        del cbvs
-        del catalog
-        del times
-        del lightcurves
-        gc.collect()
+        try:
+            del cbvs
+            del catalog
+            del times
+            del lightcurves
+            gc.collect()
+        except NameError:
+            print('Some requested free items did not exist, using existing cbv.pkl?')
 
         # start reloading things
         catalog = Catalog(config, apply_mask=False)
@@ -119,6 +122,7 @@ if __name__ == "__main__":
         # pickle the intermediate CBVs object incase it crashes later
         cuts.picklify(cbv_pickle_file_output, cbvs)
 
+        # use multiprocessing to fit everything
         cbvs.cotrend_data_map_mp(catalog)
         # pickle the intermediate CBVs object incase it crashes later
         cuts.picklify(cbv_pickle_file_output, cbvs)
