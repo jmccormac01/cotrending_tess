@@ -40,7 +40,6 @@ if __name__ == "__main__":
     root = config['global']['root']
 
     # grab the locations of the data
-    root = config['global']['root']
     cbv_pickle_file = config['data']['cbv_file']
     cbv_pickle_file_output = f"{root}/{cbv_pickle_file}"
     cbv_fit_method = config['cotrend']['cbv_fit_method']
@@ -75,7 +74,10 @@ if __name__ == "__main__":
         cuts.picklify(cbv_pickle_file_output, cbvs)
 
         # calculate fit coefficient correlations
-        cbvs.plot_fit_coeff_correlations(catalog)
+        try:
+            cbvs.plot_fit_coeff_correlations(catalog)
+        except Exception:
+            print('Binning likely failed. Fix this later')
 
     # if we want to do the full detrend, continue
     if not args.cbvs_only:
