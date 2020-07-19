@@ -84,12 +84,20 @@ if __name__ == "__main__":
         # At this point we have the CBVs, now we need to go back and
         # cotrend everything using them. We have to reload all the phot
         # the catalog and redo the variability calc etc
+
+        # TODO: This is super sloppy, there is likely a better way to structure the code
+        # to do this. Come back to it later.
+
+        # Copy the things we want to keep in the larger instance of CBVs
+        # with all the fainter objects now included
         print('Copying results...')
         vectors = deepcopy(cbvs.vect_store)
         cbvs_copy = deepcopy(cbvs.cbvs)
         U_copy = deepcopy(cbvs.U)
         Sigma_copy = deepcopy(cbvs.s)
         VT_copy = deepcopy(cbvs.VT)
+        cbv_mask_copy = deepcopy(cbvs.cbvs_mask)
+        cbvs_snr_copy = deepcopy(cbvs.cbvs_snr)
 
         # free up some resources
         print('Freeing up some resources...')
@@ -105,7 +113,6 @@ if __name__ == "__main__":
         # start reloading things
         catalog = Catalog(config, apply_mask=False)
         times, lightcurves = clc.load_photometry(config, apply_mask=False)
-
         # recreate the cbvs class but now manually insert some stuff from
         # the previous run and rerun the required parts for the cotrending
         cbvs = CBVs(config, times, lightcurves)
@@ -113,7 +120,8 @@ if __name__ == "__main__":
         cbvs.U = U_copy
         cbvs.s = Sigma_copy
         cbvs.VT = VT_copy
-
+        cbvs.cbv_mask = cbv_mask_copy
+        cbvs.cbvs_snr = cbvs_snr_copy
         # set the previously calculate parameters
         cbvs.cbvs = cbvs_copy
         cbvs.vect_store = vectors
