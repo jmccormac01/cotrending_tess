@@ -29,6 +29,8 @@ def arg_parse():
     p.add_argument('pool_size',
                    type=int,
                    help='number of cores to run on')
+    p.add_argument('--object_mask',
+                   help='use the object mask if limited set')
     return p.parse_args()
 
 def worker_fn(star_id, constants):
@@ -102,6 +104,10 @@ if __name__ == "__main__":
     # load this info for adding to plots
     catalog = depicklify(args.catalog)
     cbvs = depicklify(args.cbvs)
+
+    if args.object_mask:
+        obj_mask = depicklify(args.object_mask)
+        catalog = catalog[obj_mask]
 
     if catalog is not None and cbvs is not None:
 
