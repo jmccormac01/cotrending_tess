@@ -37,14 +37,11 @@ def worker_fn(star_id, constants):
     """
     Read the files and do the plotting
     """
-    catalog, variability, mask = constants
+    tic_ids, t_mags, variability, mask = constants
 
-    # ra, dec, Tmag, ID
-    current_cat_row = catalog[:, star_id]
-    tic_id = int(current_cat_row[-1])
-    t_mag = round(current_cat_row[-2], 2)
-
-    # variability
+    # grab some info about the object
+    tic_id = int(tic_ids[star_id])
+    t_mag = round(t_mags[star_id], 2)
     var_n = round(variability[star_id], 4)
 
     # names
@@ -105,23 +102,27 @@ if __name__ == "__main__":
     catalog = depicklify(args.catalog)
     cbvs = depicklify(args.cbvs)
 
-    if args.object_mask:
-        obj_mask = depicklify(args.object_mask)
-        catalog = catalog[obj_mask]
-
     if catalog is not None and cbvs is not None:
 
-        # check the shapes match
-        assert len(catalog[0]) == len(cbvs.variability), "Mismatched catalog/variability arrays"
+        if args.object_mask:
+            obj_mask = depicklify(args.object_mask)
+        else:
+            obj_mask = np.array([True]*len(catalog[0]))
 
-        n_targets = len(catalog[0])
+        tic_ids = catalog[-1][obj_mask]
+        t_mags = catalog[-2][obj_mask]
+
+        # check the shapes match
+        assert len(tic_ids) == len(t_mags) == len(cbvs.variability), "Mismatched catalog/variability arrays"
+
+        n_targets = len(tic_ids)
         target_ids = np.arange(0, n_targets)
 
         with fits.open(args.mask) as ff:
             cadence_mask = ff[1].data['MASK']
 
         # set up constants tuple
-        const = (catalog, cbvs.variability, cadence_mask)
+        const = (tic_ids, t_mags, cbvs.variability, cadence_mask)
 
         # make a partial function with the constants baked in
         fn = partial(worker_fn, constants=const)
