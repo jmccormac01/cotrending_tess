@@ -44,10 +44,6 @@ def worker_fn(star_id, constants):
 
     # variability
     var_n = round(variability[star_id], 4)
-    if var_n >= 3.9:
-        method = "PRIOR"
-    else:
-        method = "LS"
 
     # names
     fits_file = f"TIC-{tic_id}.fits"
@@ -70,7 +66,7 @@ def worker_fn(star_id, constants):
 
         # now make a plot of the data, the correction and the corrected data
         fig, ax = plt.subplots(nrows=5, ncols=1, figsize=(10, 10), sharex=True)
-        ax[0].set_title(f"TIC-{tic_id} T={t_mag} Var_n={var} [{method}]")
+        ax[0].set_title(f"TIC-{tic_id} T={t_mag} Var_n={var_n}")
         ax[0].plot(bjd, flux, 'k.', label='AP2.5')
         ax[0].legend()
         ax[0].set_ylabel('Flux')
