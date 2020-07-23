@@ -96,7 +96,7 @@ if __name__ == "__main__":
         U_copy = deepcopy(cbvs.U)
         Sigma_copy = deepcopy(cbvs.s)
         VT_copy = deepcopy(cbvs.VT)
-        cbv_mask_copy = deepcopy(cbvs.cbvs_mask)
+        cbv_mask_copy = deepcopy(cbvs.cbv_mask)
         cbvs_snr_copy = deepcopy(cbvs.cbvs_snr)
 
         # free up some resources
