@@ -45,7 +45,7 @@ if __name__ == "__main__":
     cbv_fit_method = config['cotrend']['cbv_fit_method']
 
     # load the external catalog
-    catalog = Catalog(config)
+    catalog = Catalog(config, apply_object_mask=True)
 
     # check if we have the cbv pickle file
     print(f"Looking for pickle file {cbv_pickle_file_output}...")
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
         # step 1, load the photometry, this is done here and not prior to
         # the check for CBVs because the flux array is pickled with the CBVs
-        times, lightcurves = clc.load_photometry(config)
+        times, lightcurves = clc.load_photometry(config, apply_object_mask=True)
 
         # create a CBVs object for our targets, we want the top n_CBVs
         cbvs = CBVs(config, times, lightcurves)
@@ -111,8 +111,8 @@ if __name__ == "__main__":
             print('Some requested free items did not exist, using existing cbv.pkl?')
 
         # start reloading things
-        catalog = Catalog(config, apply_mask=False)
-        times, lightcurves = clc.load_photometry(config, apply_mask=False)
+        catalog = Catalog(config, apply_object_mask=False)
+        times, lightcurves = clc.load_photometry(config, apply_object_mask=False)
         # recreate the cbvs class but now manually insert some stuff from
         # the previous run and rerun the required parts for the cotrending
         cbvs = CBVs(config, times, lightcurves)
