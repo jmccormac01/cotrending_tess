@@ -60,15 +60,13 @@ if __name__ == "__main__":
             fig, ax = plt.subplots(ncols=3, nrows=n_cbvs+3, figsize=(20, 20), sharex=True, sharey=True)
 
             # row 0 is the raw fluxes, duplicate them to guide the eye
-            title = f"Var: {cbvs.variability[loc]:.3f} Pw: {mapp.prior_weight:.3f} Pg: {mapp.prior_goodness:.3f}"
+            title = f'Mag: {mapp.mag} Var: {cbvs.variability[mapp.tus_id]:.3f} Prior Wt: {mapp.prior_weight:.3f} [{mapp.prior_weight_pt_var:.3f}:{mapp.prior_weight_pt_gen_good:.3f}] Prior Gdness: {mapp.prior_general_goodness:.3f} [{mapp.prior_noise_goodness:.3f}]'
             ax[0, 0].plot(cbvs.norm_flux_array[loc], 'k.', label='raw data')
-            ax[0, 0].set_title(f"Var: {cbvs.variability[loc]:.4f}")
             ax[0, 0].legend()
             ax[0, 1].plot(cbvs.norm_flux_array[loc], 'k.', label='raw data')
-            ax[0, 1].set_title(f"Var: {cbvs.variability[loc]:.4f}")
+            ax[0, 1].set_title(title)
             ax[0, 1].legend()
             ax[0, 2].plot(cbvs.norm_flux_array[loc], 'k.', label='raw data')
-            ax[0, 2].set_title(f"Var: {cbvs.variability[loc]:.4f}")
             ax[0, 2].legend()
 
             # cbvs
@@ -87,13 +85,13 @@ if __name__ == "__main__":
                 this_cbv_prior = cbvs.cbvs[cbv_id]*mapp.prior_peak_theta[cbv_id]
                 prior_cbvs.append(this_cbv_prior)
                 ax[i+1, 1].plot(this_cbv_prior, 'r.',
-                        label=f'CBV {cbv_id} [{mapp.prior_peak_theta[cbv_id]:.5f}]')
+                                label=f'CBV {cbv_id} [{mapp.prior_peak_theta[cbv_id]:.5f}]')
                 ax[i+1, 1].legend()
                 # posterior
                 this_cbv_post = cbvs.cbvs[cbv_id]*mapp.posterior_peak_theta[cbv_id]
                 post_cbvs.append(this_cbv_post)
                 ax[i+1, 2].plot(this_cbv_post, 'r.',
-                        label=f'CBV {cbv_id} [{mapp.posterior_peak_theta[cbv_id]:.5f}]')
+                                label=f'CBV {cbv_id} [{mapp.posterior_peak_theta[cbv_id]:.5f}]')
                 ax[i+1, 2].legend()
 
             # combine the cbvs using the conditional
