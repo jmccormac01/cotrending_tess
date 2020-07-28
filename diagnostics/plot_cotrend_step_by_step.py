@@ -53,12 +53,13 @@ def worker_fn(star_id, constants):
     pr_w8_gd = mapp.prior_weight_pt_gen_good
     pr_gen_gd = mapp.prior_general_goodness
     pr_noi_gd = mapp.prior_noise_goodness
+    mode = mapp.mode
 
     # PLOT THE COND, PRIOR AND POSTERIOR STEP BY STEP #
     fig, ax = plt.subplots(ncols=3, nrows=n_cbvs+3, figsize=(20, 20), sharex=True, sharey=True)
 
     # row 0 is the raw fluxes, duplicate them to guide the eye
-    title = f'Mag: {t_mag} Var: {var:.3f} Prior Wt: {pr_w8:.3f} [{pr_w8_var:.3f}:{pr_w8_gd:.3f}] Prior Gdness: {pr_gen_gd:.3f} [{pr_noi_gd:.3f}]'
+    title = f'Mag: {t_mag} Var: {var:.3f} Prior Wt: {pr_w8:.3f} [{pr_w8_var:.3f}:{pr_w8_gd:.3f}] Prior Gdness: {pr_gen_gd:.3f} [{pr_noi_gd:.3f}] -  Mode: {mode}'
     fig.suptitle(title)
     ax[0, 0].plot(flux, 'k.', label='raw data')
     ax[0, 0].legend()
@@ -135,7 +136,7 @@ def worker_fn(star_id, constants):
         axar_c = [axar_c]
 
     try:
-        _ = fig_c.suptitle(f'Mag: {t_mag} Var: {var:.3f} Prior Wt: {pr_w8:.3f} [{pr_w8_var:.3f}:{pr_w8_gd:.3f}] Prior Gdness: {pr_gen_gd:.3f} [{pr_noi_gd:.3f}]')
+        _ = fig_c.suptitle(f'Mag: {t_mag} Var: {var:.3f} Prior Wt: {pr_w8:.3f} [{pr_w8_var:.3f}:{pr_w8_gd:.3f}] Prior Gdness: {pr_gen_gd:.3f} [{pr_noi_gd:.3f}]  -  Mode: {mode}')
         for i, ax_c in zip(sorted(cbvs.cbvs.keys()), axar_c):
             # draw a vertical line for the max of each PDF
             _ = ax_c.axvline(mapp.prior_peak_theta[i], color='blue', ls='--', label="prior")
@@ -164,7 +165,7 @@ def worker_fn(star_id, constants):
         axar_p = [axar_p]
 
     try:
-        _ = fig_p.suptitle(f'Mag: {t_mag} Var: {var:.3f} Prior Wt: {pr_w8:.3f} [{pr_w8_var:.3f}:{pr_w8_gd:.3f}] Prior Gdness: {pr_gen_gd:.3f} [{pr_noi_gd:.3f}]')
+        _ = fig_p.suptitle(f'Mag: {t_mag} Var: {var:.3f} Prior Wt: {pr_w8:.3f} [{pr_w8_var:.3f}:{pr_w8_gd:.3f}] Prior Gdness: {pr_gen_gd:.3f} [{pr_noi_gd:.3f}]  -  Mode: {mode}')
         for i, ax_p in zip(sorted(cbvs.cbvs.keys()), axar_p):
             # only plot the middle 96% of the objects, like the kepler plots
             sorted_coeffs = sorted(cbvs.fit_coeffs[i][mapp.prior_mask])
@@ -199,7 +200,7 @@ def worker_fn(star_id, constants):
         axar_pt = [axar_pt]
 
     try:
-        _ = fig_pt.suptitle(f'Mag: {t_mag} Var: {var:.3f} Prior Wt: {pr_w8:.3f} [{pr_w8_var:.3f}:{pr_w8_gd:.3f}] Prior Gdness: {pr_gen_gd:.3f} [{pr_noi_gd:.3f}]')
+        _ = fig_pt.suptitle(f'Mag: {t_mag} Var: {var:.3f} Prior Wt: {pr_w8:.3f} [{pr_w8_var:.3f}:{pr_w8_gd:.3f}] Prior Gdness: {pr_gen_gd:.3f} [{pr_noi_gd:.3f}]  -  Mode: {mode}')
         for i, ax_pt in zip(sorted(cbvs.cbvs.keys()), axar_pt):
             _ = ax_pt.plot(cbvs.theta[i], mapp.posterior_pdf[i], 'k-')
             # draw a vertical line for the max of each PDF
