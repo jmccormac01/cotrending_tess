@@ -54,7 +54,6 @@ def worker_fn(star_id, constants):
     pr_gen_gd = mapp.prior_general_goodness
     pr_noi_gd = mapp.prior_noise_goodness
     mode = mapp.mode
-    mapp_success = mapp.all_max_success
 
     # PLOT THE COND, PRIOR AND POSTERIOR STEP BY STEP #
     fig, ax = plt.subplots(ncols=3, nrows=n_cbvs+3, figsize=(20, 20), sharex=True, sharey=True)
@@ -72,7 +71,7 @@ def worker_fn(star_id, constants):
     # cbvs
     cond_cbvs = []
     prior_cbvs = []
-    if mapp_success:
+    if mode == "MAP":
         post_cbvs = []
 
     for i, cbv_id in enumerate(sorted(cbvs.cbvs.keys())):
@@ -89,7 +88,7 @@ def worker_fn(star_id, constants):
                         label=f'CBV {cbv_id} [{mapp.prior_peak_theta[cbv_id]:.5f}]')
         ax[i+1, 1].legend()
         # posterior or LS again
-        if mapp_success:
+        if mode == "MAP":
             this_cbv_post = cbvs.cbvs[cbv_id]*mapp.posterior_peak_theta[cbv_id]
             post_cbvs.append(this_cbv_post)
             ax[i+1, 2].plot(this_cbv_post, 'r.',
@@ -109,7 +108,7 @@ def worker_fn(star_id, constants):
     prior_cbvs = np.sum(np.array(prior_cbvs), axis=0)
     corrected_prior = flux - prior_cbvs
     # combine the cbvs using the posterior
-    if mapp_success:
+    if mode == "MAP":
         post_cbvs = np.sum(np.array(post_cbvs), axis=0)
         corrected_post = flux - post_cbvs
 
@@ -120,7 +119,7 @@ def worker_fn(star_id, constants):
     ax[n_cbvs+1, 1].plot(prior_cbvs, '.', color='orange', label='Prior')
     ax[n_cbvs+1, 1].legend()
     # plot the commbined posterior CBVs
-    if mapp_success:
+    if mode == "MAP":
         ax[n_cbvs+1, 2].plot(post_cbvs, '.', color='orange', label='Posterior')
         ax[n_cbvs+1, 2].legend()
     # otherwise repeat the LS
@@ -135,7 +134,7 @@ def worker_fn(star_id, constants):
     ax[n_cbvs+2, 1].plot(corrected_prior, 'g.', label='Cotrended Prior')
     ax[n_cbvs+2, 1].legend()
     # then the detrended lc posterior
-    if mapp_success:
+    if mode == "MAP":
         ax[n_cbvs+2, 2].plot(corrected_post, 'g.', label='Cotrended Posterior')
         ax[n_cbvs+2, 2].legend()
     # otherwise repeat the LS
