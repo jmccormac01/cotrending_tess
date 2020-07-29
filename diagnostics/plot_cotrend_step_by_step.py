@@ -54,6 +54,7 @@ def worker_fn(star_id, constants):
     pr_gen_gd = mapp.prior_general_goodness
     pr_noi_gd = mapp.prior_noise_goodness
     mode = mapp.mode
+    mapp_success = mapp.all_max_success
 
     # PLOT THE COND, PRIOR AND POSTERIOR STEP BY STEP #
     fig, ax = plt.subplots(ncols=3, nrows=n_cbvs+3, figsize=(20, 20), sharex=True, sharey=True)
@@ -71,10 +72,11 @@ def worker_fn(star_id, constants):
     # cbvs
     cond_cbvs = []
     prior_cbvs = []
-    post_cbvs = []
+    if mapp_success:
+        post_cbvs = []
 
     for i, cbv_id in enumerate(sorted(cbvs.cbvs.keys())):
-        # conditional
+        # LS
         this_cbv_cond = cbvs.cbvs[cbv_id]*cbvs.fit_coeffs[cbv_id][star_id]
         cond_cbvs.append(this_cbv_cond)
         ax[i+1, 0].plot(this_cbv_cond, 'r.',
@@ -86,12 +88,19 @@ def worker_fn(star_id, constants):
         ax[i+1, 1].plot(this_cbv_prior, 'r.',
                         label=f'CBV {cbv_id} [{mapp.prior_peak_theta[cbv_id]:.5f}]')
         ax[i+1, 1].legend()
-        # posterior
-        this_cbv_post = cbvs.cbvs[cbv_id]*mapp.posterior_peak_theta[cbv_id]
-        post_cbvs.append(this_cbv_post)
-        ax[i+1, 2].plot(this_cbv_post, 'r.',
-                        label=f'CBV {cbv_id} [{mapp.posterior_peak_theta[cbv_id]:.5f}]')
-        ax[i+1, 2].legend()
+        # posterior or LS again
+        if mapp_success:
+            this_cbv_post = cbvs.cbvs[cbv_id]*mapp.posterior_peak_theta[cbv_id]
+            post_cbvs.append(this_cbv_post)
+            ax[i+1, 2].plot(this_cbv_post, 'r.',
+                            label=f'CBV {cbv_id} [{mapp.posterior_peak_theta[cbv_id]:.5f}]')
+            ax[i+1, 2].legend()
+        # otherwise just plot the LS one again in 3rd column
+        else:
+            ax[i+1, 2].plot(this_cbv_cond, 'r.',
+                            label=f'CBV {cbv_id} [{cbvs.fit_coeffs[cbv_id][star_id]:.5f}]')
+            ax[i+1, 2].legend()
+
 
     # combine the cbvs using the conditional
     cond_cbvs = np.sum(np.array(cond_cbvs), axis=0)
@@ -100,28 +109,39 @@ def worker_fn(star_id, constants):
     prior_cbvs = np.sum(np.array(prior_cbvs), axis=0)
     corrected_prior = flux - prior_cbvs
     # combine the cbvs using the posterior
-    post_cbvs = np.sum(np.array(post_cbvs), axis=0)
-    corrected_post = flux - post_cbvs
+    if mapp_success:
+        post_cbvs = np.sum(np.array(post_cbvs), axis=0)
+        corrected_post = flux - post_cbvs
 
     # plot the commbined cond CBVs
-    ax[n_cbvs+1, 0].plot(cond_cbvs, '.', color='orange', label='Cond')
+    ax[n_cbvs+1, 0].plot(cond_cbvs, '.', color='orange', label='LS')
     ax[n_cbvs+1, 0].legend()
     # plot the commbined prior CBVs
     ax[n_cbvs+1, 1].plot(prior_cbvs, '.', color='orange', label='Prior')
     ax[n_cbvs+1, 1].legend()
     # plot the commbined posterior CBVs
-    ax[n_cbvs+1, 2].plot(post_cbvs, '.', color='orange', label='Post')
-    ax[n_cbvs+1, 2].legend()
+    if mapp_success:
+        ax[n_cbvs+1, 2].plot(post_cbvs, '.', color='orange', label='Posterior')
+        ax[n_cbvs+1, 2].legend()
+    # otherwise repeat the LS
+    else:
+        ax[n_cbvs+1, 2].plot(cond_cbvs, '.', color='orange', label='LS')
+        ax[n_cbvs+1, 2].legend()
 
     # then the detrended lc cond
-    ax[n_cbvs+2, 0].plot(corrected_cond, 'g.', label='Cotrended Cond')
+    ax[n_cbvs+2, 0].plot(corrected_cond, 'g.', label='Cotrended LS')
     ax[n_cbvs+2, 0].legend()
     # then the detrended lc prior
     ax[n_cbvs+2, 1].plot(corrected_prior, 'g.', label='Cotrended Prior')
     ax[n_cbvs+2, 1].legend()
     # then the detrended lc posterior
-    ax[n_cbvs+2, 2].plot(corrected_post, 'g.', label='Cotrended Post')
-    ax[n_cbvs+2, 2].legend()
+    if mapp_success:
+        ax[n_cbvs+2, 2].plot(corrected_post, 'g.', label='Cotrended Posterior')
+        ax[n_cbvs+2, 2].legend()
+    # otherwise repeat the LS
+    else:
+        ax[n_cbvs+2, 2].plot(corrected_cond, 'g.', label='Cotrended LS')
+        ax[n_cbvs+2, 2].legend()
 
     fig.tight_layout()
     fig.subplots_adjust(top=0.95)
