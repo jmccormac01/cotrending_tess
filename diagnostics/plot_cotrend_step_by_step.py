@@ -49,10 +49,11 @@ def worker_fn(star_id, constants):
 
     # map file
     map_filename = f"TIC-{tic_id}_map.pkl"
-    try:
+
+    if os.path.exists(map_file):
         mapp = cuts.depicklify(map_filename)
         map_file = True
-    except FileNotFoundError:
+    else:
         map_file = False
 
     # if there is a map file make a bunch of plots, otherwise, just plot
