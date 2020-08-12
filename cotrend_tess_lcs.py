@@ -38,11 +38,11 @@ if __name__ == "__main__":
     config = cuts.load_config(args.config)
     camera_id = config['global']['camera_id']
     root = config['global']['root']
+    cbv_mode = config['cotrend']['cbv_mode']
 
     # grab the locations of the data
     cbv_pickle_file = config['data']['cbv_file']
     cbv_pickle_file_output = f"{root}/{cbv_pickle_file}"
-    cbv_fit_method = config['cotrend']['cbv_fit_method']
 
     # load the external catalog
     catalog = Catalog(config, apply_object_mask=True)
@@ -132,13 +132,19 @@ if __name__ == "__main__":
         # pickle the intermediate CBVs object incase it crashes later
         cuts.picklify(cbv_pickle_file_output, cbvs)
 
-        # use multiprocessing to fit everything
-        cbvs.cotrend_data_map_mp(catalog)
+        # fit using MAP or LS
+        if cbv_mode == "MAP":
+            # use multiprocessing to fit everything
+            cbvs.cotrend_data_map_mp(catalog)
+        else:
+            cbvs.cotrend_data_ls()
+
         # pickle the intermediate CBVs object incase it crashes later
         cuts.picklify(cbv_pickle_file_output, cbvs)
 
         # now we have the final cotrending and cotrended arrays we can
         # bake them back into the input fits files
+        # This is TESS specific, other data might require the output differently
 
         # move into the working directory and start editing the files
         os.chdir(root)

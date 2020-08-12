@@ -26,6 +26,10 @@ def arg_parse():
                    type=int,
                    help='number of cores available for worker pool',
                    choices=np.arange(1, 81))
+    p.add_argument('cbv_mode',
+                   type=str,
+                   help='CBV fitting mode, MAP | LS',
+                   choices=['MAP', 'LS'])
     return p.parse_args()
 
 args = arg_parse()
@@ -76,13 +80,12 @@ pool_size = {args.pool_size}
 max_n_cbvs = 8
 # SNR limit for significant cbvs, those with lower SNR are excluded
 cbv_snr_limit = 5
-# CBV fitting method, sequential or simultaneous
-#cbv_fit_method = "simultaneous"
-cbv_fit_method = "sequential"
 # set if we want LS or MAP fitting - NOTE: MAP still needs some work
-cbv_mode = "MAP"
+cbv_mode = f"{args.cbv_mode}"
 # set the normalised variability limit
 normalised_variability_limit = 1.3
+# set the normalised variability limit below which priors are not used
+prior_normalised_variability_limit = 0.85
 # take a few test case stars to plot PDFs etc
 test_stars = [10,100,1000]
 """
