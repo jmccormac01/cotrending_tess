@@ -55,6 +55,8 @@ def worker_fn(star_id, constants):
     pr_noi_gd = mapp.prior_noise_goodness
     mode = mapp.mode
 
+    failures = 0
+
     # PLOT THE COND, PRIOR AND POSTERIOR STEP BY STEP #
     fig, ax = plt.subplots(ncols=3, nrows=n_cbvs+3, figsize=(20, 20), sharex=True, sharey=True)
 
@@ -169,7 +171,8 @@ def worker_fn(star_id, constants):
         fig_c.tight_layout()
         fig_c.subplots_adjust(top=0.95)
     except Exception:
-        print("Prior plotting failed for star {star_id}")
+        print(f"Prior plotting failed for TIC-{tic_id}")
+        failures += 1
 
     fig_c.savefig(f"TIC-{tic_id}_conditional_pdfs.png")
     fig_c.clf()
@@ -206,7 +209,8 @@ def worker_fn(star_id, constants):
         fig_p.tight_layout()
         fig_p.subplots_adjust(top=0.95)
     except Exception:
-        print("Prior plotting failed for star {star_id}")
+        print(f"Prior plotting failed for TIC-{tic_id}")
+        failures += 1
 
     fig_p.savefig(f"TIC-{tic_id}_prior_pdfs.png")
     fig_p.clf()
@@ -231,12 +235,15 @@ def worker_fn(star_id, constants):
         fig_pt.tight_layout()
         fig_pt.subplots_adjust(top=0.95)
     except Exception:
-        print("Prior plotting failed for star {star_id}")
+        print(f"Prior plotting failed for TiC-{tic_id}")
+        failures += 1
 
     fig_pt.savefig(f"TIC-{tic_id}_posterior_pdfs.png")
     fig_pt.clf()
     plt.close()
     gc.collect()
+
+    return star_id, failures
 
 
 if __name__ == "__main__":
@@ -267,4 +274,4 @@ if __name__ == "__main__":
 
     # run a pool of 6 workers and set them detrending
     with Pool(args.pool_size) as pool:
-        pool.map(fn, target_ids)
+        results = pool.map(fn, target_ids)
