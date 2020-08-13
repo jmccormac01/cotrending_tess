@@ -69,7 +69,7 @@ if __name__ == "__main__":
         cuts.picklify(cbv_pickle_file_output, cbvs)
 
         # work out the fit coefficients, needed for the Prior PDF
-        cbvs.calculate_robust_fit_coeffs_simult()
+        cbvs.calculate_robust_fit_coeffs_sequen()
         # pickle the intermediate CBVs object incase it crashes later
         cuts.picklify(cbv_pickle_file_output, cbvs)
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         cbvs.n_cbvs = len(vectors)
 
         # work out the fit coefficients, needed for the Prior PDF
-        cbvs.calculate_robust_fit_coeffs_simult()
+        cbvs.calculate_robust_fit_coeffs_sequen()
         # pickle the intermediate CBVs object incase it crashes later
         cuts.picklify(cbv_pickle_file_output, cbvs)
 
