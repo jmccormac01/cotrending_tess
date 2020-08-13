@@ -81,7 +81,7 @@ max_n_cbvs = 8
 # SNR limit for significant cbvs, those with lower SNR are excluded
 cbv_snr_limit = 5
 # set if we want LS or MAP fitting - NOTE: MAP still needs some work
-cbv_mode = f"{args.cbv_mode}"
+cbv_mode = "{args.cbv_mode}"
 # set the normalised variability limit
 normalised_variability_limit = 1.3
 # set the normalised variability limit below which priors are not used
