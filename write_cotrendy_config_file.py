@@ -41,6 +41,8 @@ name = "James McCormac"
 version = "0.0.1"
 
 [global]
+# enable debugging mode?
+debug = true
 # working directory
 root = "{root}"
 # time slot identifier, quarter, night etc
