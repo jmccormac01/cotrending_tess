@@ -79,7 +79,7 @@ dim_weights = [1, 1, 2]
 # number of workers in multiprocessing pool
 pool_size = {args.pool_size}
 # maximum number of CBVs to attempt extracting
-max_n_cbvs = 8
+max_n_cbvs = 12
 # SNR limit for significant cbvs, those with lower SNR are excluded
 cbv_snr_limit = 5
 # set if we want LS or MAP fitting - NOTE: MAP still needs some work
