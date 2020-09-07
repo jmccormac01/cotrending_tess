@@ -1,7 +1,6 @@
 """
 Take a directory of TESS lcs, a catalog
-for those objects and a with fits.open(mask_files[0]) as ff:
-mask = ff[1].datamask file and
+for those objects and a with mask and
 prepare input files for cotrendy
 """
 import os
@@ -34,11 +33,12 @@ if __name__ == "__main__":
     os.chdir(root)
 
     # load the sector cadence mask
-    m = fits.open(mask_file)
-    mask = m[1].data['MASK']
+    with fits.open(mask_file) as m:
+        mask = m[1].data['MASK']
 
     # load the catalog
-    cat = fits.open(cat_file)[1].data
+    with fits.open(cat_file) as cata:
+        cat = cata[1].data
 
     # store some stuff for later
     fluxes_to_cotrendy, ras, decs, mags, ids = [], [], [], [], []
@@ -53,7 +53,9 @@ if __name__ == "__main__":
         tic_file = f"TIC-{tic_id}.fits"
 
         try:
-            h = fits.open(tic_file)[1].data
+            with fits.open(tic_file) as ff:
+                h = ff[1].data
+
             flux = h['AP2.5'][mask]
             sky = h['SKY_MEDIAN'][mask] * np.pi * (2.5**2)
             flux_corr = flux - sky

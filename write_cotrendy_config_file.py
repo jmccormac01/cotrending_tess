@@ -1,6 +1,7 @@
 """
 Write out a cotrendy config file
 """
+import os
 import argparse as ap
 import numpy as np
 
@@ -33,8 +34,16 @@ def arg_parse():
     return p.parse_args()
 
 args = arg_parse()
+tmpdir = os.getenv('TMPDIR')
 root = f"/tess/photometry/tessFFIextract/lightcurves/{args.sector_id}_{args.camera_id}-{args.chip_id}"
-config_filename = f"{root}/config_{args.sector_id}_{args.camera_id}-{args.chip_id}.toml"
+
+# copy all the fits files to the tmpdir
+comm = f"cp {root}/TIC-*.fits {tmpdir}/"
+print(comm)
+os.system(comm)
+
+# now make a config file and put it in the working directory
+config_filename = f"{tmpdir}/config_{args.sector_id}_{args.camera_id}-{args.chip_id}.toml"
 config_template = f"""# This is a TOML config file for TESS Sector {args.sector_id}
 [owner]
 name = "James McCormac"
@@ -44,7 +53,7 @@ version = "0.0.1"
 # enable debugging mode?
 debug = true
 # working directory
-root = "{root}"
+root = "{tmpdir}"
 # time slot identifier, quarter, night etc
 timeslot = "{args.sector_id}"
 # camera_id

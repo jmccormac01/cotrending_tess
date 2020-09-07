@@ -7,7 +7,6 @@ from copy import deepcopy
 import argparse as ap
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
 from astropy.table import Table, Column
@@ -43,6 +42,9 @@ if __name__ == "__main__":
     # grab the locations of the data
     cbv_pickle_file = config['data']['cbv_file']
     cbv_pickle_file_output = f"{root}/{cbv_pickle_file}"
+
+    # move into the working directory
+    os.chdir(root)
 
     # load the external catalog
     catalog = Catalog(config, apply_object_mask=True)
@@ -146,19 +148,19 @@ if __name__ == "__main__":
         # bake them back into the input fits files
         # This is TESS specific, other data might require the output differently
 
-        # move into the working directory and start editing the files
-        os.chdir(root)
-
         # load the cadence mask
         cadence_mask_file = config['data']['cadence_mask_file']
-        m = fits.open(cadence_mask_file)
-        mask = m[1].data['MASK']
+        with fits.open(cadence_mask_file) as mf:
+            mask = mf[1].data['MASK']
 
         # get a list of the light curve files for editing
         for i, tic_id in enumerate(catalog.ids):
             # load the fits lc file
             fits_file = f"TIC-{np.int64(tic_id)}.fits"
-            table = Table(fits.open(fits_file)[1].data)
+
+            with fits.open(fits_file) as ff:
+                table = Table(ff[1].data)
+
             print(fits_file, os.path.exists(fits_file))
 
             output_lc = np.ones(len(mask)) * -99.0
