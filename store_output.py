@@ -2,6 +2,7 @@
 Take the products from SGE tmpdir and store them
 """
 import os
+import glob as g
 import argparse as ap
 
 # pylint: disable=invalid-name
@@ -31,12 +32,23 @@ root = f"/tess/photometry/tessFFIextract/lightcurves/{args.sector_id}_{args.came
 os.chdir(tmpdir)
 
 # copy all the fits files etc back to main data dir
-comm = f"cp -f TIC-*.fits {root}/"
-print(comm)
-os.system(comm)
-comm2 = f"cp -f *.pkl {root}/"
-print(comm2)
-os.system(comm2)
-comm3 = f"cp -f *.toml {root}/"
-print(comm3)
-os.system(comm3)
+templist = g.glob('TIC-*.fits')
+n_templist = len(templist)
+for i, t in zip(templist, range(n_templist)):
+    comm = f"cp -fv {t} {root}/"
+    print(f"[{i+1}/{n_templist}] " + comm)
+    os.system(comm)
+
+templist2 = g.glob('*.pkl')
+n_templist2 = len(templist2)
+for i, t in zip(templist2, range(n_templist2)):
+    comm2 = f"cp -fv {t} {root}/"
+    print(f"[{i+1}/{n_templist2}] " + comm2)
+    os.system(comm2)
+
+templist3 = g.glob('*.toml')
+n_templist3 = len(templist3)
+for i, t in zip(templist3, range(n_templist3)):
+    comm3 = f"cp -fv {t} {root}/"
+    print(f"[{i+1}/{n_templist3}] " + comm3)
+    os.system(comm3)

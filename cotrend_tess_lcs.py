@@ -154,6 +154,7 @@ if __name__ == "__main__":
             mask = mf[1].data['MASK']
 
         # get a list of the light curve files for editing
+        n_cat_obj = len(catalog.ids)
         for i, tic_id in enumerate(catalog.ids):
             # load the fits lc file
             fits_file = f"TIC-{np.int64(tic_id)}.fits"
@@ -161,7 +162,8 @@ if __name__ == "__main__":
             with fits.open(fits_file) as ff:
                 table = Table(ff[1].data)
 
-            print(fits_file, os.path.exists(fits_file))
+            exists = os.path.exists(fits_file)
+            print(f"[{i+1}/{n_cat_obj}] {fits_file} {exists}")
 
             output_lc = np.ones(len(mask)) * -99.0
             output_cbv = np.ones(len(mask)) * -99.0

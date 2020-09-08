@@ -2,6 +2,7 @@
 Write out a cotrendy config file
 """
 import os
+import glob as g
 import argparse as ap
 import numpy as np
 
@@ -38,9 +39,16 @@ tmpdir = os.getenv('TMPDIR')
 root = f"/tess/photometry/tessFFIextract/lightcurves/{args.sector_id}_{args.camera_id}-{args.chip_id}"
 
 # copy all the fits files to the tmpdir
-comm = f"cp {root}/TIC-*.fits {tmpdir}/"
-print(comm)
-os.system(comm)
+#comm = f"cp {root}/TIC-*.fits {tmpdir}/"
+#print(comm)
+#os.system(comm)
+
+templist = g.glob(f"{root}/TIC-*.fits")
+n_templist = len(templist)
+for i, t in zip(templist, range(n_templist)):
+    comm = f"cp -fv {t} {tmpdir}/"
+    print(f"[{i+1}/{n_templist}] " + comm)
+    os.system(comm)
 
 # now make a config file and put it in the working directory
 config_filename = f"{tmpdir}/config_{args.sector_id}_{args.camera_id}-{args.chip_id}.toml"
