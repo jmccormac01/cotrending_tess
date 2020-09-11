@@ -88,6 +88,8 @@ reject_outliers = false
 master_cat_file = "/tess/photometry/tessFFIextract/sources/{args.sector_id}_{args.camera_id}-{args.chip_id}.fits"
 # CBV input catalogs - these are the stars kept for making the CBVs
 # ra, dec, mag, id
+# coords units, are they in degrees for ra/dec or pix for X/Y
+coords_units = "deg"
 input_cat_file = "tess_{args.sector_id}_{args.camera_id}-{args.chip_id}_cat.pkl"
 # MAP weights for ra, dec and mag
 dim_weights = [1, 1, 2]
