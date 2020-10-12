@@ -36,19 +36,19 @@ templist = g.glob('TIC-*.fits')
 n_templist = len(templist)
 for i, t in zip(range(n_templist), templist):
     comm = f"cp -fv {t} {root}/"
-    print(f"[{i+1}/{n_templist}] " + comm)
+    #print(f"[{i+1}/{n_templist}] " + comm)
     os.system(comm)
 
 templist2 = g.glob('*.pkl')
 n_templist2 = len(templist2)
 for i, t in zip(range(n_templist2), templist2):
     comm2 = f"cp -fv {t} {root}/"
-    print(f"[{i+1}/{n_templist2}] " + comm2)
+    #print(f"[{i+1}/{n_templist2}] " + comm2)
     os.system(comm2)
 
 templist3 = g.glob('*.toml')
 n_templist3 = len(templist3)
 for i, t in zip(range(n_templist3), templist3):
     comm3 = f"cp -fv {t} {root}/"
-    print(f"[{i+1}/{n_templist3}] " + comm3)
+    #print(f"[{i+1}/{n_templist3}] " + comm3)
     os.system(comm3)

@@ -163,7 +163,7 @@ if __name__ == "__main__":
                 table = Table(ff[1].data)
 
             exists = os.path.exists(fits_file)
-            print(f"[{i+1}/{n_cat_obj}] {fits_file} {exists}")
+            #print(f"[{i+1}/{n_cat_obj}] {fits_file} {exists}")
 
             output_lc = np.ones(len(mask)) * -99.0
             output_cbv = np.ones(len(mask)) * -99.0

@@ -2,6 +2,7 @@
 Take the cbvs file, find an object that went wrong
 and plot all the steps of the correction
 """
+import os
 import gc
 from multiprocessing import Pool
 import argparse as ap
@@ -38,6 +39,10 @@ def worker_fn(star_id, constants):
     tic_ids, t_mags, cbvs = constants
 
     tic_id = tic_ids[star_id]
+
+    if tic_id != 10000171995:
+        return None
+
     t_mag = t_mags[star_id]
     var = cbvs.variability[star_id]
     flux = cbvs.norm_flux_array[star_id]
@@ -50,7 +55,7 @@ def worker_fn(star_id, constants):
     # map file
     map_filename = f"TIC-{tic_id}_map.pkl"
 
-    if os.path.exists(map_file):
+    if os.path.exists(map_filename):
         mapp = cuts.depicklify(map_filename)
         map_file = True
     else:
@@ -68,17 +73,19 @@ def worker_fn(star_id, constants):
         mode = mapp.mode
 
         # PLOT THE COND, PRIOR AND POSTERIOR STEP BY STEP #
-        fig, ax = plt.subplots(ncols=3, nrows=n_cbvs+3, figsize=(20, 20), sharex=True, sharey=True)
+        #fig, ax = plt.subplots(ncols=3, nrows=n_cbvs+3, figsize=(20, 20), sharex=True, sharey=True)
+        fig, ax = plt.subplots(ncols=2, nrows=3, figsize=(15, 10), sharex=True, sharey=True)
 
         # row 0 is the raw fluxes, duplicate them to guide the eye
         title = f'Mag: {t_mag} Var: {var:.3f} Prior Wt: {pr_w8:.3f} [{pr_w8_var:.3f}:{pr_w8_gd:.3f}] Prior Gdness: {pr_gen_gd:.3f} [{pr_noi_gd:.3f}] -  Mode: {mode}'
         fig.suptitle(title)
         ax[0, 0].plot(flux, 'k.', label='raw data')
         ax[0, 0].legend()
+        ax[0, 0].set_ylabel('Flux Norm')
         ax[0, 1].plot(flux, 'k.', label='raw data')
         ax[0, 1].legend()
-        ax[0, 2].plot(flux, 'k.', label='raw data')
-        ax[0, 2].legend()
+        #ax[0, 2].plot(flux, 'k.', label='raw data')
+        #ax[0, 2].legend()
 
         # cbvs
         cond_cbvs = []
@@ -90,27 +97,27 @@ def worker_fn(star_id, constants):
             # LS
             this_cbv_cond = cbvs.cbvs[cbv_id]*cbvs.fit_coeffs[cbv_id][star_id]
             cond_cbvs.append(this_cbv_cond)
-            ax[i+1, 0].plot(this_cbv_cond, 'r.',
-                            label=f'CBV {cbv_id} [{cbvs.fit_coeffs[cbv_id][star_id]:.5f}]')
-            ax[i+1, 0].legend()
+            #ax[i+1, 0].plot(this_cbv_cond, 'r.',
+            #                label=f'CBV {cbv_id} [{cbvs.fit_coeffs[cbv_id][star_id]:.5f}]')
+            #ax[i+1, 0].legend()
             # prior
             this_cbv_prior = cbvs.cbvs[cbv_id]*mapp.prior_peak_theta[cbv_id]
             prior_cbvs.append(this_cbv_prior)
-            ax[i+1, 1].plot(this_cbv_prior, 'r.',
-                            label=f'CBV {cbv_id} [{mapp.prior_peak_theta[cbv_id]:.5f}]')
-            ax[i+1, 1].legend()
+            #ax[i+1, 1].plot(this_cbv_prior, 'r.',
+            #                label=f'CBV {cbv_id} [{mapp.prior_peak_theta[cbv_id]:.5f}]')
+            #ax[i+1, 1].legend()
             # posterior or LS again
             if mode == "MAP":
                 this_cbv_post = cbvs.cbvs[cbv_id]*mapp.posterior_peak_theta[cbv_id]
                 post_cbvs.append(this_cbv_post)
-                ax[i+1, 2].plot(this_cbv_post, 'r.',
-                                label=f'CBV {cbv_id} [{mapp.posterior_peak_theta[cbv_id]:.5f}]')
-                ax[i+1, 2].legend()
+                #ax[i+1, 2].plot(this_cbv_post, 'r.',
+                #                label=f'CBV {cbv_id} [{mapp.posterior_peak_theta[cbv_id]:.5f}]')
+                #ax[i+1, 2].legend()
             # otherwise just plot the LS one again in 3rd column
-            else:
-                ax[i+1, 2].plot(this_cbv_cond, 'r.',
-                                label=f'CBV {cbv_id} [{cbvs.fit_coeffs[cbv_id][star_id]:.5f}]')
-                ax[i+1, 2].legend()
+            #else:
+            #    ax[i+1, 2].plot(this_cbv_cond, 'r.',
+            #                    label=f'CBV {cbv_id} [{cbvs.fit_coeffs[cbv_id][star_id]:.5f}]')
+            #    ax[i+1, 2].legend()
 
 
         # combine the cbvs using the conditional
@@ -124,35 +131,54 @@ def worker_fn(star_id, constants):
             post_cbvs = np.sum(np.array(post_cbvs), axis=0)
             corrected_post = flux - post_cbvs
 
-        # plot the commbined cond CBVs
-        ax[n_cbvs+1, 0].plot(cond_cbvs, '.', color='orange', label='LS')
-        ax[n_cbvs+1, 0].legend()
-        # plot the commbined prior CBVs
-        ax[n_cbvs+1, 1].plot(prior_cbvs, '.', color='orange', label='Prior')
-        ax[n_cbvs+1, 1].legend()
-        # plot the commbined posterior CBVs
-        if mode == "MAP":
-            ax[n_cbvs+1, 2].plot(post_cbvs, '.', color='orange', label='Posterior')
-            ax[n_cbvs+1, 2].legend()
-        # otherwise repeat the LS
-        else:
-            ax[n_cbvs+1, 2].plot(cond_cbvs, '.', color='orange', label='LS')
-            ax[n_cbvs+1, 2].legend()
+        ## plot the commbined cond CBVs
+        #ax[n_cbvs+1, 0].plot(cond_cbvs, '.', color='orange', label='LS')
+        #ax[n_cbvs+1, 0].legend()
+        ## plot the commbined prior CBVs
+        #ax[n_cbvs+1, 1].plot(prior_cbvs, '.', color='orange', label='Prior')
+        #ax[n_cbvs+1, 1].legend()
+        ## plot the commbined posterior CBVs
+        #if mode == "MAP":
+        #    ax[n_cbvs+1, 2].plot(post_cbvs, '.', color='orange', label='Posterior')
+        #    ax[n_cbvs+1, 2].legend()
+        ## otherwise repeat the LS
+        #else:
+        #    ax[n_cbvs+1, 2].plot(cond_cbvs, '.', color='orange', label='LS')
+        #    ax[n_cbvs+1, 2].legend()
 
-        # then the detrended lc cond
-        ax[n_cbvs+2, 0].plot(corrected_cond, 'g.', label='Cotrended LS')
-        ax[n_cbvs+2, 0].legend()
-        # then the detrended lc prior
-        ax[n_cbvs+2, 1].plot(corrected_prior, 'g.', label='Cotrended Prior')
-        ax[n_cbvs+2, 1].legend()
-        # then the detrended lc posterior
-        if mode == "MAP":
-            ax[n_cbvs+2, 2].plot(corrected_post, 'g.', label='Cotrended Posterior')
-            ax[n_cbvs+2, 2].legend()
-        # otherwise repeat the LS
-        else:
-            ax[n_cbvs+2, 2].plot(corrected_cond, 'g.', label='Cotrended LS')
-            ax[n_cbvs+2, 2].legend()
+        # plot the commbined cond CBVs
+        ax[1, 0].plot(cond_cbvs, '.', color='orange', label='LS')
+        ax[1, 0].legend()
+        ax[1, 0].set_ylabel('CBV Total')
+        # plot the commbined posterior CBVs
+        ax[1, 1].plot(post_cbvs, '.', color='orange', label='MAP')
+        ax[1, 1].legend()
+
+        ## then the detrended lc cond
+        #ax[n_cbvs+2, 0].plot(corrected_cond, 'g.', label='Cotrended LS')
+        #ax[n_cbvs+2, 0].legend()
+        ## then the detrended lc prior
+        #ax[n_cbvs+2, 1].plot(corrected_prior, 'g.', label='Cotrended Prior')
+        #ax[n_cbvs+2, 1].legend()
+        ## then the detrended lc posterior
+        #if mode == "MAP":
+        #    ax[n_cbvs+2, 2].plot(corrected_post, 'g.', label='Cotrended Posterior')
+        #    ax[n_cbvs+2, 2].legend()
+        ## otherwise repeat the LS
+        #else:
+        #    ax[n_cbvs+2, 2].plot(corrected_cond, 'g.', label='Cotrended LS')
+        #    ax[n_cbvs+2, 2].legend()
+
+
+        # plot the commbined cond CBVs
+        ax[2, 0].plot(corrected_cond, '.', color='green', label='LS')
+        ax[2, 0].legend()
+        ax[2, 0].set_ylabel('Cotrended Flux')
+        ax[2, 0].set_xlabel('Image ID')
+        # plot the commbined posterior CBVs
+        ax[2, 1].plot(corrected_post, '.', color='green', label='MAP')
+        ax[2, 1].legend()
+        ax[2, 1].set_xlabel('Image ID')
 
         fig.tight_layout()
         fig.subplots_adjust(top=0.95)
