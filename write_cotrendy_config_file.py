@@ -47,7 +47,7 @@ templist = g.glob(f"{root}/TIC-*.fits")
 n_templist = len(templist)
 for i, t in zip(range(n_templist), templist):
     comm = f"cp -fv {t} {tmpdir}/"
-    print(f"[{i+1}/{n_templist}] {comm}")
+    #print(f"[{i+1}/{n_templist}] {comm}")
     os.system(comm)
 
 # now make a config file and put it in the working directory
