@@ -65,20 +65,20 @@ if __name__ == "__main__":
             skipped += 1
             continue
 
-        if neg == 0:
-            ras.append(row['RA'])
-            decs.append(row['DEC'])
-            mags.append(row['Tmag'])
-            ids.append(tic_id)
+        #if neg == 0:
+        ras.append(row['RA'])
+        decs.append(row['DEC'])
+        mags.append(row['Tmag'])
+        ids.append(tic_id)
 
-            fluxes_to_cotrendy.append(flux_corr)
-            times0 = int(h['BJD'][mask][0])
-            times = h['BJD'][mask] - times0
+        fluxes_to_cotrendy.append(flux_corr)
+        times0 = int(h['BJD'][mask][0])
+        times = h['BJD'][mask] - times0
 
-            if 8.0 <= row['Tmag'] <= 12.0 and neg == 0:
-                cbv_objects_mask.append(True)
-            else:
-                cbv_objects_mask.append(False)
+        if 8.0 <= row['Tmag'] <= 12.0:# and neg == 0:
+            cbv_objects_mask.append(True)
+        else:
+            cbv_objects_mask.append(False)
 
     fluxes_to_cotrendy = np.array(fluxes_to_cotrendy)
     cbv_objects_mask = np.array(cbv_objects_mask)
